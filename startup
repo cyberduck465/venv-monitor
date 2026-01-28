@@ -1,0 +1,2 @@
+source ~/venv-monitor/bin/activate
+python app.py

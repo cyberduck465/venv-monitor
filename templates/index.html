@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.0.0/lib/xterm.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css" />
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+{% endblock %}
+{% block content %}
+<h1>系統監控</h1>
+<div id="status"></div>
+
+<h2>Terminal</h2>
+<div id="terminal" style="height:400px; width:100%;"></div>
+
+<script>
+async function refreshStatus() {
+  const res = await fetch('/status');
+  const data = await res.json();
+  document.getElementById('status').innerHTML = `
+    CPU 使用率: ${data.cpu}%<br>
+    RAM 使用率: ${data.ram}%<br>
+    磁碟使用率: ${data.disk}%<br>
+    網路: 上傳 ${data.net.bytesSent} / 下載 ${data.net.bytesRecv}<br>
+    電池: ${data.battery !== null ? data.battery + '%' : '無'}<br>
+    Uptime: ${Math.floor(data.uptime/60)} 分鐘<br>
+    前 10 個進程:<br>
+    ${data.processes.map(p => p.pid + ' - ' + p.name).join('<br>')}
+  `;
+}
+setInterval(refreshStatus, 5000);
+refreshStatus();
+
+// Terminal
+const term = new Terminal({cols:80, rows:24});
+term.open(document.getElementById('terminal'));
+
+const socket = io();
+const username = "{{ os_user }}";
+const hostname = "{{ os_host }}";
+const homeDir = "{{ home_dir }}";
+
+function prompt() {
+  term.write(`\r\n┌──(${username}㉿${hostname})-[${homeDir}]\r\n└─$ `);
+}
+prompt();
+
+term.onData(data => {
+  socket.emit("terminal", data);
+});
+
+socket.on("terminal_response", data => {
+  term.write("\r\n" + data);
+  prompt();
+});
+</script>
+{% endblock %}
+

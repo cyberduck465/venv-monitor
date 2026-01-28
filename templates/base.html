@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>中控台</title>
+  <style>
+    body { margin:0; font-family: monospace; background:#111; color:#0f0; }
+    .sidebar { width:200px; background:#222; height:100vh; float:left; padding:10px; }
+    .sidebar a { display:block; color:#0f0; padding:8px; text-decoration:none; }
+    .sidebar a:hover { background:#333; }
+    .content { margin-left:200px; padding:20px; }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <div class="sidebar">
+    <a href="/">首頁</a>
+    <a href="/crontab">自動化排程</a>
+    <a href="/network">網卡資料</a>
+    <a href="/path">環境變數</a>
+  </div>
+  <div class="content">
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>
